@@ -55,4 +55,5 @@ RUN printf 'server {\n\
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Railway injects $PORT at runtime — replace the hardcoded 80 with it before starting nginx
+CMD sh -c "sed -i \"s/listen 80;/listen ${PORT:-80};/g\" /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
