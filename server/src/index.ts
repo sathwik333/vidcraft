@@ -117,7 +117,7 @@ app.use(clerkMiddleware());
 app.use("/api", apiLimiter);
 
 // ─── Health Check (unauthenticated) ─────────────────────────────────────────
-app.get("/api/health", (_req, res) => {
+app.get(["/health", "/api/health"], (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
