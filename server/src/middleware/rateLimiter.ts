@@ -1,4 +1,4 @@
-import rateLimit, { ipKeyGenerator } from "express-rate-limit";
+import rateLimit from "express-rate-limit";
 import { getAuth } from "@clerk/express";
 import { config } from "../config/env.js";
 import { logger } from "../utils/logger.js";
