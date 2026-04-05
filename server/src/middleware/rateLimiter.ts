@@ -5,10 +5,19 @@ import { logger } from "../utils/logger.js";
 import type { Request } from "express";
 
 /**
+ * Normalize IPv6-mapped IPv4 addresses (e.g. "::ffff:10.0.0.1" → "10.0.0.1").
+ * Behind reverse proxies like Railway, req.ip often returns the IPv6-mapped form,
+ * which can cause rate limiter buckets to fragment or fail.
+ */
+function ipKeyGenerator(req: Request): string {
+  const raw = req.ip || req.socket.remoteAddress || "unknown";
+  const normalized = raw.startsWith("::ffff:") ? raw.slice(7) : raw;
+  return normalized;
+}
+
+/**
  * Key generator that uses the authenticated user's ID when available,
- * falling back to IP address. This prevents a single authenticated user
- * from exhausting the limit for all users behind the same IP (e.g. office NAT),
- * while still protecting unauthenticated endpoints by IP.
+ * falling back to normalized IP address.
  */
 function userAwareKeyGenerator(req: Request): string {
   try {
@@ -17,11 +26,11 @@ function userAwareKeyGenerator(req: Request): string {
   } catch {
     // Clerk middleware may not have run yet — fall back to IP
   }
-  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+  return `ip:${ipKeyGenerator(req)}`;
 }
 
 function ipOnlyKeyGenerator(req: Request): string {
-  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+  return `ip:${ipKeyGenerator(req)}`;
 }
 
 /**
