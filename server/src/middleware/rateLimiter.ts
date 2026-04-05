@@ -1,4 +1,4 @@
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { getAuth } from "@clerk/express";
 import { config } from "../config/env.js";
 import { logger } from "../utils/logger.js";
@@ -17,11 +17,11 @@ function userAwareKeyGenerator(req: Request): string {
   } catch {
     // Clerk middleware may not have run yet — fall back to IP
   }
-  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+  return `ip:${ipKeyGenerator(req)}`;
 }
 
 function ipOnlyKeyGenerator(req: Request): string {
-  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
+  return `ip:${ipKeyGenerator(req)}`;
 }
 
 /**
